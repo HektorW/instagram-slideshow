@@ -1,0 +1,205 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans);
+
+body {
+	background-color: #111;
+	color: #fff;
+	font-family: 'Open Sans', sans-serif;
+}
+
+#app {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translateX(-50%) translateY(-50%);
+    
+	overflow: hidden;
+	font-size: 0;
+}
+
+.image-container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.image-container img {
+	width: 100%;
+}
+
+.text {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	margin: 0 0 5% 3%;
+	max-width: 650px;
+	max-height: 70%;
+	
+	font-size: 15px;
+}
+
+.user {
+	font-size: 40px;
+	font-weight: bold;
+	letter-spacing: 4px;
+	opacity: 0.7;
+}
+.caption {
+	margin: 5px 0 20px 0;
+	opacity: 0.9;
+	letter-spacing: 1px;
+}
+
+.likes, .comments {
+	opacity: 0.8;
+}
+.comments {
+	margin-left: 20px;
+}
+
+.fade {
+	position: absolute;
+	width: 130%;
+	height: 50%;
+	bottom: 0;
+	left:0 ;
+	background: radial-gradient(ellipse at 0% 100%, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.0) 70%, rgba(0, 0, 0, 0.0) 100%);
+}
+
+
+.image-container.pending {
+	display: none;
+}
+
+
+
+.image-container.animate-in {
+	transform: translateX(100%);
+	animation: animate-in 1.5s 0.5s ease-in-out forwards;
+}
+.image-container.animate-in img {
+	animation: animate-in-parallax 1.5s 0.5s ease-in-out;
+}
+.image-container.animate-in .text {
+	transform: translateX(70%);
+	animation: animate-in-text 2.4s 1.5s forwards;
+}
+
+
+.image-container.animate-out {
+	animation: animate-out 1.5s 0.5s ease-in-out;
+}
+.image-container.animate-out img {
+	animation: animate-out-parallax 1.5s 0.5s ease-in-out;
+}
+.image-container.animate-out .text {
+	animation: animate-out-text 2.5s forwards;
+}
+
+@keyframes animate-in-text {
+	0% { transform: translate3d(70%, 0, 0); }
+	100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes animate-out-text {
+	0% { transform: translate3d(0, 0, 0); }
+	100% { transform: translate3d(-70%, 0, 0); }
+}
+
+@keyframes animate-in-parallax {
+	0% { transform: translate3d(-10%, 0, 0); }
+	100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes animate-out-parallax {
+	0% { transform: translate3d(0, 0, 0); }
+	100% { transform: translate3d(10%, 0, 0); }
+}
+
+
+@keyframes animate-in {
+	0% { transform: translate3d(100%, 0, 0); }
+	100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes animate-out {
+	0% { transform: translate3d(0, 0, 0); }
+	100% { transform: translate3d(-100%, 0, 0); }
+}
+
+
+
+
+
+
+/* ---------------- */
+/* Unicorn */
+.unicorn-container {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  
+  background-color: #ed1c27;
+  border-radius: 50%;
+  
+}
+.unicorn-container.rainbow {
+	background-image: $rainbow;
+	background-size: 200%;
+}
+
+.unicorn {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  
+  -webkit-mask-image: url('http://i.imgur.com/oKcSDnq.png');
+  -webkit-mask-size: cover;
+}
+
+.star {
+  position: absolute;
+  height: auto;
+  fill: #fff;
+  animation: twinkle 2s infinite;  
+}
+
+.star_1 {
+	width: 4.8%;
+	top: 41%;
+	left: 23.9%;
+}
+.star_2 {
+	width: 3.9%;
+	top: 13.9%;
+	left: 45.4%;
+	animation-delay: 0.4s;
+}
+.star_3 {
+	width: 5.9%;
+	top: 62.4%;
+	left: 46%;
+	animation-delay: 0.6s;
+}
+.star_4 {
+	width: 7%;
+	top: 30%;
+	left: 58.2%;
+	animation-delay: 1.2s;
+}
+.star_5 {
+	width: 4.4%;
+	top: 38.5%;
+	left: 75%;
+	animation-delay: 1.5s;
+}
+
+@keyframes twinkle {
+  0% { transform: scale(1) rotateZ(0deg); }
+  20% { transform: scale(0) rotateZ(-90deg); }
+  40% { transform: scale(1) rotateZ(-180deg); }
+  100% { transform: rotateZ(-180deg); }
+}
