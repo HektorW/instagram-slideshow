@@ -8,7 +8,7 @@ var Instagram = {
 
 	BASE_URL: 'https://api.instagram.com/v1',
 
-	fetchTag: function(tag, maxId) {
+	fetchTagMedia: function(tag, maxId) {
 		var options = {
 			type: 'tags',
 			arg: tag,
@@ -19,10 +19,62 @@ var Instagram = {
 			options.queries.push('MAX_TAG_ID=' + maxId);
 		}
 
-		return this.fetch(options);
+		return this.fetchMedia(options);
 	},
 
-	fetch: function(options) {
+	fetchUserMedia: function(userId, maxId) {
+		var options = {
+			type: 'users',
+			arg: userId,
+			queries: []
+		};
+
+		if (maxId) {
+			options.queries.push('MAX_ID=' + maxId);
+		}
+
+		return this.fetchMedia(options);
+	},
+
+	fetchUser: function(username) {
+		var url = this.BASE_URL;
+
+		url += '/users/search';
+
+		url += '?' + Util.buildQuery({
+			client_id: this.CLIENT_ID,
+			q: username
+		});
+
+		var promise = $.Deferred();
+
+		$.ajax({
+			type: 'GET',
+			dataType: 'jsonp',
+			url: url,
+
+			success: function(data) {
+				var users = data.data;
+				for (var i = 0, len = users.length; i < len; i++) {
+					var user = users[i];
+					if (user.username === username) {
+						promise.resolve(user);
+						return;
+					}
+				}
+				console.error('Couldn\'t find user with username', username);
+				promise.reject();
+			},
+			error: function() {
+				console.error('Error while fetching', url);
+				promise.reject();
+			}
+		})
+
+		return promise;
+	},
+
+	fetchMedia: function(options) {
 		var url = this.BASE_URL;
 
 		url += '/' + options.type;
@@ -75,8 +127,11 @@ ImageData.prototype = {
 		this.pagination = data.pagination;
 	},
 
-	updateData: function(data) {
-		this.setData(data);
+	updateData: function(imageData) {
+		this.currentImageIndex = -1;
+		this.data = imageData.data;
+		this.images = imageData.images;
+		this.pagination = imageData.pagination;
 	},
 
 	nextImage: function() {
@@ -102,7 +157,7 @@ var Util = {
 			for (var i = 0, len = keys.length; i < len; i++) {
 				value = value[keys[i]];
 
-				if (typeof value === 'undefined') {
+				if (value === undefined || value === null) {
 					return match;
 				}
 			}
@@ -111,7 +166,7 @@ var Util = {
 		});
 	},
 
-	getQuery: function(name) {
+	getBrowserQuery: function(name) {
 		if (!this._queries) {
 			this._queries = {};
 
@@ -123,6 +178,18 @@ var Util = {
 		}
 
 		return this._queries[name];
+	},
+
+	buildQuery: function(queries) {
+		var arr = [];
+
+		for (var q in queries) {
+			if (!queries.hasOwnProperty(q)) continue;
+
+			arr.push(q + '=' + queries[q]);
+		}
+
+		return arr.join('&');
 	}
 }
 
@@ -142,7 +209,7 @@ var Slideshow = {
 
 		this.imageTemplate = $('[data-image-template]').get(0).innerHTML;
 
-		this.slideDuration = Util.getQuery('slideduration') || this.slideDuration;
+		this.slideDuration = Util.getBrowserQuery('slideduration') || this.slideDuration;
 
 		this.$next = null;
 		this.$current = null;
@@ -153,7 +220,7 @@ var Slideshow = {
 			this.imageData = imageData;
 			this.startSlideshow();
 		} else {
-			this.imageData.update(imageData);
+			this.imageData.updateData(imageData);
 		}
 	},
 
@@ -227,20 +294,29 @@ var App = {
 	$elem: null,
 	imageTemplate: null,
 
+	refreshInterval: 5 * 60 * 1000,
+
 	init: function() {
 		this.$elem = $('#app');
 
-		if (Util.getQuery('hashtag')) {
-			this.hashtag = Util.getQuery('hashtag');
+		if (Util.getBrowserQuery('hashtag')) {
+			this.hashtag = Util.getBrowserQuery('hashtag');
+		}
+		if (Util.getBrowserQuery('refreshinterval')) {
+			this.refreshInterval = parseInt(Util.getBrowserQuery('refreshinterval'), 10) || this.refreshInterval;
 		}
 
 		Slideshow.init(this.$elem);
 
 		this.bindEvents();
 
-		Instagram.fetchTag(this.hashtag).done($.proxy(this.imageDataUpdated, this));
-
+		this.fetchImageData();
+		this.setupRefreshInterval();
 		this.resize();
+	},
+
+	setupRefreshInterval: function() {
+		this.refreshIntervalId = setInterval($.proxy(this.fetchImageData, this), this.refreshInterval);
 	},
 
 	bindEvents: function() {
@@ -255,6 +331,15 @@ var App = {
 		this.$elem.css({
 			width: size,
 			height: size
+		});
+	},
+
+	fetchImageData: function() {
+		// Instagram.fetchTagMedia(this.hashtag).done($.proxy(this.imageDataUpdated, this));
+		// Instagram.fetchUserMedia('9440393').done($.proxy(this.imageDataUpdated, this));
+		var imageDataUpdated = $.proxy(this.imageDataUpdated, this);
+		Instagram.fetchUser('snickapela').done(function(user) {
+			Instagram.fetchUserMedia(user.id).done(imageDataUpdated);
 		});
 	},
 
